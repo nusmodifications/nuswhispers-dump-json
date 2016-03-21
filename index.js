@@ -37,16 +37,22 @@ var server = tunnel(tunnelConfig, function (err, result) {
 
     ws.write('[');
 
+    var lastRow;
+
     query
       .on('error', function (err) {
         console.error('Query error: ' + err);
       })
       .on('result', function (row) {
-        ws.write(JSON.stringify(row));
+        if (lastRow) {
+          ws.write(lastRow + ',');
+        }
+
+        lastRow = JSON.stringify(row);
         count++;
       })
       .on('end', function() {
-        ws.write(']');
+        ws.write(lastRow + ']');
         ws.end();
 
         console.log('Completed dumping ' + count + ' rows.');
